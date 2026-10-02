@@ -187,4 +187,32 @@ describe('useShallow', () => {
 
     expect(screen.getByTestId('test-shallow')).toHaveTextContent('a,b,c,1')
   })
+
+  it('re-renders when a selected Date changes (#1064)', () => {
+    let countRenders = 0
+    const useMyStore = create(() => ({
+      date: new Date('2020-01-01T00:00:00.000Z'),
+    }))
+    const TestShallowDate = () => {
+      const date = useMyStore(useShallow((state) => state.date))
+      ++countRenders
+      return <div data-testid="test-shallow">{date.toISOString()}</div>
+    }
+
+    render(<TestShallowDate />)
+    expect(countRenders).toBe(1)
+
+    act(() => {
+      useMyStore.setState({ date: new Date('2020-01-01T00:00:00.000Z') })
+    })
+    expect(countRenders).toBe(1)
+
+    act(() => {
+      useMyStore.setState({ date: new Date('2030-01-01T00:00:00.000Z') })
+    })
+    expect(countRenders).toBe(2)
+    expect(screen.getByTestId('test-shallow')).toHaveTextContent(
+      '2030-01-01T00:00:00.000Z',
+    )
+  })
 })

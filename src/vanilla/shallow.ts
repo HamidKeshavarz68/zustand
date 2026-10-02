@@ -60,6 +60,20 @@ export function shallow<T>(valueA: T, valueB: T): boolean {
   if (Object.getPrototypeOf(valueA) !== Object.getPrototypeOf(valueB)) {
     return false
   }
+  // Built-ins without own enumerable properties (prototypes are equal here)
+  if (valueA instanceof Date && valueB instanceof Date) {
+    return Object.is(valueA.getTime(), valueB.getTime())
+  }
+  if (valueA instanceof RegExp && valueB instanceof RegExp) {
+    return String(valueA) === String(valueB)
+  }
+  if (
+    typeof URL !== 'undefined' &&
+    valueA instanceof URL &&
+    valueB instanceof URL
+  ) {
+    return valueA.href === valueB.href
+  }
   if (isIterable(valueA) && isIterable(valueB)) {
     if (hasIterableEntries(valueA) && hasIterableEntries(valueB)) {
       return compareEntries(valueA, valueB)

@@ -224,13 +224,51 @@ describe('generators', () => {
   })
 })
 
-describe('unsupported cases', () => {
-  it('date', () => {
+describe('built-in objects (#1064)', () => {
+  it('compares Dates', () => {
+    expect(
+      shallow(
+        new Date('2022-07-19T00:00:00.000Z'),
+        new Date('2022-07-19T00:00:00.000Z'),
+      ),
+    ).toBe(true)
     expect(
       shallow(
         new Date('2022-07-19T00:00:00.000Z'),
         new Date('2022-07-20T00:00:00.000Z'),
       ),
-    ).not.toBe(false)
+    ).toBe(false)
+    expect(
+      shallow(
+        new Date('2022-07-19T00:00:00.000Z'),
+        new Date('2022-07-19T00:00:00.001Z'),
+      ),
+    ).toBe(false)
+    expect(shallow(new Date('invalid'), new Date('invalid'))).toBe(true)
+    expect(shallow(new Date('invalid'), new Date(0))).toBe(false)
+  })
+
+  it('compares RegExps', () => {
+    expect(shallow(/a/g, /a/g)).toBe(true)
+    expect(shallow(/a/, /b/)).toBe(false)
+    expect(shallow(/a/g, /a/i)).toBe(false)
+  })
+
+  it('compares URLs', () => {
+    expect(shallow(new URL('https://a.com'), new URL('https://a.com'))).toBe(
+      true,
+    )
+    expect(shallow(new URL('https://a.com'), new URL('https://b.com'))).toBe(
+      false,
+    )
+    expect(
+      shallow(new URL('https://a.com?x=1'), new URL('https://a.com?x=2')),
+    ).toBe(false)
+  })
+
+  it('compares built-ins with plain objects', () => {
+    expect(shallow<unknown>(new Date(0), {})).toBe(false)
+    expect(shallow<unknown>(/a/, {})).toBe(false)
+    expect(shallow<unknown>(new URL('https://a.com'), {})).toBe(false)
   })
 })
